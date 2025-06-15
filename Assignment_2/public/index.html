@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>File Manager</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+    input, textarea, button {
+      margin-top: 10px;
+      width: 100%;
+      padding: 8px;
+      font-size: 1em;
+    }
+    h2 {
+      background: #444;
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .section {
+      margin-bottom: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    pre {
+      background: #222;
+      color: lime;
+      padding: 10px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>📂 Simple File Manager</h1>
+
+  <div class="section">
+    <h2>📝 Create File</h2>
+    <input id="create-filename" placeholder="Filename (e.g. hello.txt)">
+    <textarea id="create-content" placeholder="File content..."></textarea>
+    <button onclick="createFile()">Create</button>
+  </div>
+
+  <div class="section">
+    <h2>📖 Read File</h2>
+    <input id="read-filename" placeholder="Filename to read">
+    <button onclick="readFile()">Read</button>
+    <pre id="read-result"></pre>
+  </div>
+
+  <div class="section">
+    <h2>🗑️ Delete File</h2>
+    <input id="delete-filename" placeholder="Filename to delete">
+    <button onclick="deleteFile()">Delete</button>
+    <pre id="delete-result"></pre>
+  </div>
+
+  <script>
+    const createFile = () => {
+      const filename = document.getElementById('create-filename').value;
+      const content = document.getElementById('create-content').value;
+
+      fetch('/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename, content })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.message || data.error));
+    };
+
+    const readFile = () => {
+      const filename = document.getElementById('read-filename').value;
+
+      fetch(`/read?filename=${filename}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('read-result').textContent = data.content || data.error;
+        });
+    };
+
+    const deleteFile = () => {
+      const filename = document.getElementById('delete-filename').value;
+
+      fetch(`/delete?filename=${filename}`, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('delete-result').textContent = data.message || data.error;
+      });
+    };
+  </script>
+</body>
+</html>
