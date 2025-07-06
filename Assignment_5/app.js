@@ -6,7 +6,7 @@ const User = require('./models/User');
 const app = express();
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb+srv://soumyasrivastav53:UOlafmBBliWn3zFG@cluster0.00wwt1p.mongodb.net/', {
+mongoose.connect('mongodb+srv://soumyasrivastav53:DB_PASSWORD@cluster0.00wwt1p.mongodb.net/', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }).then(() => console.log('MongoDB Connected'))
