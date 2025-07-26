@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Advanced Express.js Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .console {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Debug Mode - API Testing</h1>
+    
+    <div class="debug-section">
+        <h2>👤 User Management Test</h2>
+        <input type="text" id="userName" placeholder="Name" value="John Doe">
+        <input type="email" id="userEmail" placeholder="Email" value="john@example.com">
+        <input type="number" id="userAge" placeholder="Age" value="25">
+        <button onclick="testCreateUser()">Create User</button>
+        <div id="userResult" class="result" style="display: none;"></div>
+        <div id="userConsole" class="console"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>🌤️ Weather API Test</h2>
+        <input type="text" id="cityInput" placeholder="City Name" value="London">
+        <button onclick="testWeather()">Get Weather</button>
+        <div id="weatherResult" class="result" style="display: none;"></div>
+        <div id="weatherConsole" class="console"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>💭 Quote API Test</h2>
+        <button onclick="testQuote()">Get Quote</button>
+        <div id="quoteResult" class="result" style="display: none;"></div>
+        <div id="quoteConsole" class="console"></div>
+    </div>
+
+    <div class="debug-section">
+        <h2>📊 Server Status</h2>
+        <button onclick="testHealth()">Check Health</button>
+        <div id="healthResult" class="result" style="display: none;"></div>
+        <div id="healthConsole" class="console"></div>
+    </div>
+
+    <script>
+        function log(consoleId, message) {
+            const console = document.getElementById(consoleId);
+            const timestamp = new Date().toLocaleTimeString();
+            console.textContent += `[${timestamp}] ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function showResult(resultId, message, isSuccess = true) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+        }
+
+        async function testCreateUser() {
+            const consoleId = 'userConsole';
+            const resultId = 'userResult';
+            
+            log(consoleId, 'Starting user creation test...');
+            
+            const userData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                age: parseInt(document.getElementById('userAge').value)
+            };
+
+            log(consoleId, `Request data: ${JSON.stringify(userData)}`);
+
+            try {
+                log(consoleId, 'Sending POST request to /api/users...');
+                
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                log(consoleId, `Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(consoleId, `Response data: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    showResult(resultId, `User created! ID: ${result.data.id}`, true);
+                    log(consoleId, 'SUCCESS: User created successfully');
+                } else {
+                    showResult(resultId, `Error: ${result.error}`, false);
+                    log(consoleId, `ERROR: ${result.error}`);
+                }
+                
+            } catch (error) {
+                log(consoleId, `NETWORK ERROR: ${error.message}`);
+                showResult(resultId, `Network error: ${error.message}`, false);
+            }
+        }
+
+        async function testWeather() {
+            const consoleId = 'weatherConsole';
+            const resultId = 'weatherResult';
+            const city = document.getElementById('cityInput').value;
+            
+            log(consoleId, `Starting weather test for city: ${city}`);
+
+            try {
+                const url = `/api/weather/${encodeURIComponent(city)}`;
+                log(consoleId, `Sending GET request to: ${url}`);
+                
+                const response = await fetch(url);
+                log(consoleId, `Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(consoleId, `Response data: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    showResult(resultId, `Weather: ${result.data.temperature}°C, ${result.data.description}`, true);
+                    log(consoleId, 'SUCCESS: Weather data retrieved');
+                } else {
+                    showResult(resultId, `Error: ${result.error}`, false);
+                    log(consoleId, `ERROR: ${result.error}`);
+                }
+                
+            } catch (error) {
+                log(consoleId, `NETWORK ERROR: ${error.message}`);
+                showResult(resultId, `Network error: ${error.message}`, false);
+            }
+        }
+
+        async function testQuote() {
+            const consoleId = 'quoteConsole';
+            const resultId = 'quoteResult';
+            
+            log(consoleId, 'Starting quote test...');
+
+            try {
+                log(consoleId, 'Sending GET request to /api/quote...');
+                
+                const response = await fetch('/api/quote');
+                log(consoleId, `Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(consoleId, `Response data: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.success) {
+                    showResult(resultId, `"${result.data.quote}" - ${result.data.author}`, true);
+                    log(consoleId, 'SUCCESS: Quote retrieved');
+                } else {
+                    showResult(resultId, `Error: ${result.error}`, false);
+                    log(consoleId, `ERROR: ${result.error}`);
+                }
+                
+            } catch (error) {
+                log(consoleId, `NETWORK ERROR: ${error.message}`);
+                showResult(resultId, `Network error: ${error.message}`, false);
+            }
+        }
+
+        async function testHealth() {
+            const consoleId = 'healthConsole';
+            const resultId = 'healthResult';
+            
+            log(consoleId, 'Starting health check...');
+
+            try {
+                log(consoleId, 'Sending GET request to /api/health...');
+                
+                const response = await fetch('/api/health');
+                log(consoleId, `Response status: ${response.status}`);
+                
+                const result = await response.json();
+                log(consoleId, `Response data: ${JSON.stringify(result, null, 2)}`);
+                
+                if (result.status === 'OK') {
+                    showResult(resultId, `Server is healthy! Uptime: ${result.uptime.toFixed(2)}s`, true);
+                    log(consoleId, 'SUCCESS: Server is healthy');
+                } else {
+                    showResult(resultId, 'Server health check failed', false);
+                    log(consoleId, 'ERROR: Health check failed');
+                }
+                
+            } catch (error) {
+                log(consoleId, `NETWORK ERROR: ${error.message}`);
+                showResult(resultId, `Network error: ${error.message}`, false);
+            }
+        }
+
+        // Test on page load
+        window.onload = function() {
+            log('healthConsole', 'Debug page loaded. Testing server connection...');
+            testHealth();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test - Express App</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin: 10px 0; }
+        input, button { padding: 10px; margin: 5px 0; width: 100%; max-width: 300px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; min-height: 30px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Simple API Test</h1>
+    
+    <div>
+        <h3>Test 1: Health Check</h3>
+        <button onclick="testHealth()">Check Server Health</button>
+        <div id="healthResult" class="result"></div>
+    </div>
+
+    <div>
+        <h3>Test 2: Create User</h3>
+        <div class="form-group">
+            <input type="text" id="testName" placeholder="Name" value="Test User">
+            <input type="email" id="testEmail" placeholder="Email" value="test@example.com">
+            <input type="number" id="testAge" placeholder="Age" value="25">
+            <button onclick="testUser()">Create User</button>
+        </div>
+        <div id="userResult" class="result"></div>
+    </div>
+
+    <div>
+        <h3>Test 3: Weather</h3>
+        <div class="form-group">
+            <input type="text" id="testCity" placeholder="City" value="London">
+            <button onclick="testWeather()">Get Weather</button>
+        </div>
+        <div id="weatherResult" class="result"></div>
+    </div>
+
+    <script>
+        console.log('Simple test page loaded');
+
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        async function testHealth() {
+            console.log('Testing health endpoint...');
+            showResult('healthResult', 'Testing...', true);
+            
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                console.log('Health response:', data);
+                
+                if (data.status === 'OK') {
+                    showResult('healthResult', `✅ Server is healthy! Uptime: ${data.uptime.toFixed(2)}s`, true);
+                } else {
+                    showResult('healthResult', '❌ Health check failed', false);
+                }
+            } catch (error) {
+                console.error('Health check error:', error);
+                showResult('healthResult', `❌ Error: ${error.message}`, false);
+            }
+        }
+
+        async function testUser() {
+            console.log('Testing user creation...');
+            showResult('userResult', 'Creating user...', true);
+            
+            const userData = {
+                name: document.getElementById('testName').value,
+                email: document.getElementById('testEmail').value,
+                age: parseInt(document.getElementById('testAge').value)
+            };
+            
+            console.log('User data:', userData);
+            
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                console.log('User response:', data);
+                
+                if (data.success) {
+                    showResult('userResult', `✅ User created! ID: ${data.data.id}`, true);
+                } else {
+                    showResult('userResult', `❌ Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                console.error('User creation error:', error);
+                showResult('userResult', `❌ Error: ${error.message}`, false);
+            }
+        }
+
+        async function testWeather() {
+            console.log('Testing weather endpoint...');
+            showResult('weatherResult', 'Getting weather...', true);
+            
+            const city = document.getElementById('testCity').value;
+            console.log('City:', city);
+            
+            try {
+                const response = await fetch(`/api/weather/${encodeURIComponent(city)}`);
+                const data = await response.json();
+                console.log('Weather response:', data);
+                
+                if (data.success) {
+                    showResult('weatherResult', `✅ Weather: ${data.data.temperature}°C, ${data.data.description}`, true);
+                } else {
+                    showResult('weatherResult', `❌ Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                console.error('Weather error:', error);
+                showResult('weatherResult', `❌ Error: ${error.message}`, false);
+            }
+        }
+
+        // Auto-test on load
+        window.onload = function() {
+            console.log('Page loaded, running auto-test...');
+            setTimeout(testHealth, 1000);
+        };
+    </script>
+</body>
+</html>

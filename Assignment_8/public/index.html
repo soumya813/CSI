@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Express.js Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c2c2c;
+            background: linear-gradient(135deg, #f7dc6f 0%, #f4d03f 50%, #f1c40f 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c2c2c;
+            box-shadow: 0 8px 32px rgba(241, 196, 15, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.85;
+            color: #34495e;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(241, 196, 15, 0.2);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(241, 196, 15, 0.3);
+        }
+
+        .feature-card h3 {
+            color: #d68910;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 50%, #d68910 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5);
+            background: linear-gradient(135deg, #e67e22 0%, #d68910 50%, #b7950b 100%);
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            border: 2px solid transparent;
+        }
+
+        .result.success {
+            background: linear-gradient(135deg, #f7dc6f 0%, #f4d03f 100%);
+            color: #7d6608;
+            border: 2px solid #f1c40f;
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+        }
+
+        .result.error {
+            background: linear-gradient(135deg, #f8c471 0%, #ec7063 100%);
+            color: #922b21;
+            border: 2px solid #e74c3c;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .file-list {
+            margin-top: 15px;
+        }
+
+        .file-item {
+            background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 3px 10px rgba(243, 156, 18, 0.2);
+        }
+
+        .api-docs {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 25px;
+            box-shadow: 0 10px 40px rgba(241, 196, 15, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .api-docs h2 {
+            color: #d68910;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .endpoint {
+            background: linear-gradient(135deg, #fef9e7 0%, #fcf3cf 100%);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            border-left: 5px solid #f39c12;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.15);
+            transition: transform 0.2s ease;
+        }
+
+        .endpoint:hover {
+            transform: translateX(5px);
+        }
+
+        .endpoint .method {
+            font-weight: bold;
+            color: #d68910;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .endpoint .url {
+            font-family: 'Courier New', monospace;
+            background: rgba(243, 156, 18, 0.1);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+
+        .weather-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f7dc6f 0%, #f4d03f 50%, #f39c12 100%);
+            color: #2c2c2c;
+            border-radius: 15px;
+            display: none;
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .quote-display {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8c471 0%, #f39c12 50%, #e67e22 100%);
+            color: #2c2c2c;
+            border-radius: 15px;
+            display: none;
+            font-style: italic;
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Advanced Express.js Application</h1>
+            <p>File Upload • Error Handling • Third-party API Integration</p>
+        </div>
+
+        <div class="features">
+            <!-- User Management -->
+            <div class="feature-card">
+                <h3>👤 User Management</h3>
+                <form id="userForm">
+                    <div class="form-group">
+                        <label for="userName">Name:</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userEmail">Email:</label>
+                        <input type="email" id="userEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userAge">Age:</label>
+                        <input type="number" id="userAge" min="18" max="120" required>
+                    </div>
+                    <button type="submit" class="btn">Add User</button>
+                </form>
+                <div id="userResult" class="result"></div>
+            </div>
+
+            <!-- File Upload -->
+            <div class="feature-card">
+                <h3>📁 File Upload</h3>
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="fileInput">Select Files:</label>
+                        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.csv">
+                    </div>
+                    <button type="submit" class="btn">Upload Files</button>
+                </form>
+                <div id="uploadResult" class="result"></div>
+                <div id="fileList" class="file-list"></div>
+            </div>
+
+            <!-- Weather API -->
+            <div class="feature-card">
+                <h3>🌤️ Weather Information</h3>
+                <form id="weatherForm">
+                    <div class="form-group">
+                        <label for="cityInput">City Name:</label>
+                        <input type="text" id="cityInput" placeholder="Enter city name" required>
+                    </div>
+                    <button type="submit" class="btn">Get Weather</button>
+                </form>
+                <div id="weatherResult" class="result"></div>
+                <div id="weatherDisplay" class="weather-display"></div>
+            </div>
+
+            <!-- Random Quote -->
+            <div class="feature-card">
+                <h3>💭 Random Quote</h3>
+                <button id="quoteBtn" class="btn">Get Inspirational Quote</button>
+                <div id="quoteResult" class="result"></div>
+                <div id="quoteDisplay" class="quote-display"></div>
+            </div>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="api-docs">
+            <h2>📚 API Documentation</h2>
+            
+            <div class="endpoint">
+                <div><span class="method">GET</span> <span class="url">/api/health</span></div>
+                <p>Check server health status</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">GET</span> <span class="url">/api/users</span></div>
+                <p>Get all users</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">POST</span> <span class="url">/api/users</span></div>
+                <p>Create a new user (requires name, email, age)</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">POST</span> <span class="url">/api/upload/single</span></div>
+                <p>Upload a single file</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">POST</span> <span class="url">/api/upload/multiple</span></div>
+                <p>Upload multiple files (max 5 files, 5MB each)</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">GET</span> <span class="url">/api/files</span></div>
+                <p>Get list of uploaded files</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">GET</span> <span class="url">/api/weather/:city</span></div>
+                <p>Get weather information for a specific city</p>
+            </div>
+
+            <div class="endpoint">
+                <div><span class="method">GET</span> <span class="url">/api/quote</span></div>
+                <p>Get a random inspirational quote</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add console logging for debugging
+        console.log('Script loaded successfully');
+
+        // User Management
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('User form submitted');
+            const resultDiv = document.getElementById('userResult');
+            
+            const userData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                age: parseInt(document.getElementById('userAge').value)
+            };
+
+            console.log('User data:', userData);
+
+            try {
+                console.log('Sending request to /api/users');
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `User created successfully! ID: ${result.data.id}`;
+                    document.getElementById('userForm').reset();
+                    console.log('User created successfully');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${result.error}`;
+                    console.log('User creation failed:', result.error);
+                }
+                
+                resultDiv.style.display = 'block';
+                console.log('Result div should now be visible');
+            } catch (error) {
+                console.error('Network error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network error: ${error.message}`;
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // File Upload
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resultDiv = document.getElementById('uploadResult');
+            const fileListDiv = document.getElementById('fileList');
+            const fileInput = document.getElementById('fileInput');
+
+            if (!fileInput.files.length) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please select at least one file';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of fileInput.files) {
+                formData.append('files', file);
+            }
+
+            try {
+                const response = await fetch('/api/upload/multiple', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = result.message;
+                    
+                    // Display uploaded files
+                    fileListDiv.innerHTML = '<h4>Uploaded Files:</h4>';
+                    result.data.forEach(file => {
+                        const fileDiv = document.createElement('div');
+                        fileDiv.className = 'file-item';
+                        fileDiv.innerHTML = `
+                            <strong>${file.originalName}</strong><br>
+                            Size: ${(file.size / 1024).toFixed(2)} KB<br>
+                            <a href="${file.url}" target="_blank">View File</a>
+                        `;
+                        fileListDiv.appendChild(fileDiv);
+                    });
+                    
+                    document.getElementById('uploadForm').reset();
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${result.error}`;
+                }
+                
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network error: ${error.message}`;
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // Weather API
+        document.getElementById('weatherForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            console.log('Weather form submitted');
+            const resultDiv = document.getElementById('weatherResult');
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const city = document.getElementById('cityInput').value;
+
+            console.log('Weather city:', city);
+
+            try {
+                const url = `/api/weather/${encodeURIComponent(city)}`;
+                console.log('Sending request to:', url);
+                const response = await fetch(url);
+                console.log('Weather response status:', response.status);
+                const result = await response.json();
+                console.log('Weather response data:', result);
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'Weather data loaded successfully!';
+                    
+                    weatherDisplay.innerHTML = `
+                        <h4>🌤️ Weather in ${result.data.city}, ${result.data.country}</h4>
+                        <p><strong>Temperature:</strong> ${result.data.temperature}°C</p>
+                        <p><strong>Description:</strong> ${result.data.description}</p>
+                        <p><strong>Humidity:</strong> ${result.data.humidity}%</p>
+                        <p><strong>Wind Speed:</strong> ${result.data.windSpeed} m/s</p>
+                        ${result.note ? `<p><em>${result.note}</em></p>` : ''}
+                    `;
+                    weatherDisplay.style.display = 'block';
+                    console.log('Weather data displayed successfully');
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${result.error}`;
+                    weatherDisplay.style.display = 'none';
+                    console.log('Weather request failed:', result.error);
+                }
+                
+                resultDiv.style.display = 'block';
+                console.log('Weather result div should now be visible');
+            } catch (error) {
+                console.error('Weather network error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network error: ${error.message}`;
+                resultDiv.style.display = 'block';
+                weatherDisplay.style.display = 'none';
+            }
+        });
+
+        // Random Quote
+        document.getElementById('quoteBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('quoteResult');
+            const quoteDisplay = document.getElementById('quoteDisplay');
+
+            try {
+                const response = await fetch('/api/quote');
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'Quote loaded successfully!';
+                    
+                    quoteDisplay.innerHTML = `
+                        <p>"${result.data.quote}"</p>
+                        <p><strong>— ${result.data.author}</strong></p>
+                        <p><small>Tags: ${result.data.tags.join(', ')}</small></p>
+                        ${result.note ? `<p><em>${result.note}</em></p>` : ''}
+                    `;
+                    quoteDisplay.style.display = 'block';
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${result.error}`;
+                    quoteDisplay.style.display = 'none';
+                }
+                
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network error: ${error.message}`;
+                resultDiv.style.display = 'block';
+                quoteDisplay.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
